@@ -1,0 +1,83 @@
+lsscsi (0.26-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Tue, 31 Jan 2012 18:00:00 -0500
+
+lsscsi (0.25-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Mon, 04 May 2011 10:00:00 -0400
+
+lsscsi (0.24-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Thu, 23 Dec 2010 16:00:00 -0500
+
+lsscsi (0.23-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Thu, 03 Dec 2009 02:00:00 +0100
+
+lsscsi (0.22-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Fri, 26 Dec 2008 19:30:00 -0500
+
+lsscsi (0.21-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Thu, 10 Jul 2008 01:00:00 -0400
+
+lsscsi (0.20-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Wed, 9 Jul 2008 15:00:00 -0400
+
+lsscsi (0.19-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Wed, 25 Jan 2007 14:00:00 -0500
+
+lsscsi (0.18-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Fri, 24 Mar 2006 22:00:00 -0500
+
+lsscsi (0.17-0.1) unstable; urgency=low
+
+  * new upstream version
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Mon, 06 Feb 2006 16:00:00 +1000
+
+lsscsi (0.16-0.1) unstable; urgency=low
+
+  * add debian build directory
+
+ -- Douglas Gilbert <dgilbert@interlog.com>  Fri, 30 Dec 2005 16:00:00 +1000
+
+lsscsi (0.15-1) unstable; urgency=low
+
+  * New upstream version
+  * Upstream removed dependency on libsysfs, remove build-dep
+  * Upstream automade/autoconficated, adjust for that
+  * Add new AUTHORS and CREDITS to docs, change CHANGELOG to ChangeLog
+
+ -- Matt Taggart <taggart@debian.org>  Wed, 21 Sep 2005 17:34:55 -0700
+
+lsscsi (0.14-1) unstable; urgency=low
+
+  * Initial Release.
+  * Standard dh_make single package, minor Makefile variable changes,
+    no other changes needed. (upstream knows how to use DESTDIR)
+
+ -- Matt Taggart <taggart@debian.org>  Wed,  2 Feb 2005 00:27:11 -0800
+

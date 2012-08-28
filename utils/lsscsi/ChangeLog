@@ -1,0 +1,124 @@
+
+Version 0.26 2012/01/31 [svn: r97]
+  - add 'fcoe' transport indicator
+  - add '--wwn' option, datamine /dev/disk/by-id/wwn*
+  - move lsscsi.c into src directory
+
+Version 0.25 2011/05/09 [svn: r92]
+  - add sas_port and fc_remote_ports transport information
+  - print enclosure_device entry
+  - add '--size' option to show size of disks
+  - add '--protmode' option to show protection information mode
+
+Version 0.24 2010/06/12 [svn: r83]
+  - FC transport syntax changes (colon to slash)
+  - add "(null)" to the currently accepted "<NULL>" as
+    the string representation of NULL
+  - add AM_MAINTAINER_MODE to configure.ac
+  - scandir() library function has changed its signature
+    in its 4th argument, use newer (non-void) variant
+
+Version 0.23 2009/12/01 [svn: r76]
+  - remove /proc/mounts scan for sysfs mount point, assume
+    /sys unless overridden by re-instated '--sysfsroot' option
+
+Version 0.22 2008/12/26 [svn: r71]
+  - add protection information (see CREDITS file)
+  - add USB transport type with USB device name
+  - add ATA and SATA transport types (crude: by driver name)
+
+Version 0.21 2008/7/10 [svn: r64]
+  - more sysfs scanning work needed for lk 2.6.26
+
+Version 0.20 2008/7/9 [svn: r43]
+  - Handle SCSI midlayer rework circa lk 2.6.25/26
+    - this fix needed if CONFIG_SYSFS_DEPRECATED_V2 is not
+      defined in the kernel build (lk 2.6.26)
+  - clean superfluous files from package
+
+Version 0.19 2007/1/25 [svn: r37]
+  - add transport information (target + initiator)
+    - start with FC, SAS, SPI, iSCSI and SBP
+    - alter ISCSI for 2.6.20 changes
+  - SAS fix for lk 2.6.20 (SYSFS_DEPRECATED=n)
+  - enhance host name search when proc_name is "<NULL>"
+  - implement filter option for '--hosts'
+    - accept 'host<n>' as first item in filter to mean host <n>
+  - output more host attributes when '-Hll' given
+  - add '--list' (or '-L') option output attribute=value
+    entries, one per line
+
+Version 0.18 2006/3/24
+  - cope with dropping of 'generic' symlink post lk 2.6.16
+  - anticipate the future removal of 'tape' symlink
+
+Version 0.17 2006/2/6
+  - fix disappearance of block device names in lk 2.6.16-rc1
+
+Version 0.16 2005/12/30
+  - clean up peripheral device type naming
+  - properly identify osst and changer devices
+  - add debian build directory
+
+Version 0.15 2005/6/29
+  - option '-ll' gives more attributes and '-lll' gives attributes
+    one per line
+  - change reporting if device node:
+    - use "match major+minor" with "/dev" directory (default)
+    - use synthetic device node names when '--kname' given
+      {this was the default in earlier versions}
+  - add filtering, sync with lk 2.6.12
+    {e.g. 'lsscsi 1' lists all SCSI devices on host1}
+  - convert to autotools
+  - builds on version 0.13 (does not use libsysfs)
+    {because dlist_sort_custom() does not have filter() callback}
+
+Version 0.14 2004/9/20
+  - version of 0.13 based on libsysfs-1.20
+
+Version 0.13 2004/8/20
+  - add 'timeout' to long device option output
+  - quiet (unless verbose) if no mid level (hence no SCSI devices or hosts)
+
+Version 0.12 2004/5/9
+  - rework for lk 2.6.6
+  - add proc_name for hosts
+  - replace 'online' with 'state' for scsi devices
+  - add '-d' option to output device node's major and minor numbers
+
+Version 0.11 2004/1/9
+  - rework for lk 2.6.1
+  - drop "--name" argument
+
+Version 0.10 2003/5/6
+  - adjust HBA listing (-H) for new struct scsi_host in lk 2.5.69++
+
+Version 0.09 2003/4/4
+  - fix up sorting
+  - add GPL + copyright notice
+
+Version 0.08 2003/3/2
+  - start to add host listing support (requires >= lk 2.5.63)
+
+Version 0.07 2003/2/10
+  - sysfs changes name of current_queue_depth in lk 2.5.60
+
+Version 0.06 2003/1/20
+  - fixes of osst devices
+  - use "cd" rather than "CDROM" for short peripheral type name
+
+Version 0.05 2003/1/19
+  - output st and osst device names (rather than "-")
+  - support --generic and --classic together
+  - output type (SCSI peripheral type) with --long
+
+Version 0.04 2003/1/14
+  - make sure a st device list only once (needed for lk 2.5.57)
+
+Version 0.03 2003/1/9
+  - fix Makefile to create man page directory on install
+  - add logic for scsi_level output
+  - add --generic (-g) switch to output scsi generic device file name
+
+Version 0.02 2002/12/18
+  - first entry in CHANGELOG

@@ -2,6 +2,8 @@
 *.slo
 *.lo
 *.o
+*.Po
+*.Plo
 
 # Compiled Dynamic libraries
 *.so
@@ -10,3 +12,9 @@
 *.lai
 *.la
 *.a
+
+# Make stamps
+*-stamp
+
+# Temp files
+*~

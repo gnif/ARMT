@@ -1,0 +1,49 @@
+The author of lsscsi would like to thank the following people who
+have made contributions:
+
+Dan Horak <dhorak at redhat dot com>
+    Cope with proc_name from "<NULL>" to "(null") around
+    lk 2.6.32 and FC transport syntax change [20100506]
+
+FUJITA Tomonori <fujita dot tomonori at lab dot ntt dot co dot jp>
+    iSCSI transport help [20070107]
+
+Hannes Reinecke <hare at suse dot de >
+    proposed additional code so lsscsi would work with lk 2.6.26
+    (when CONFIG_SYSFS_DEPRECATED_V2 not defined) [20080318]
+    fcoe transport indicator [20111026]
+
+Ihab Hamadi <ihab dot hamadi at emulex dot com>
+    co-author of protection information addition [20081206]
+
+James Smart <James dot Smart at Emulex dot Com>
+    transport help, especially for FC [20061128]
+
+Jean Delvare <jdelvare@suse.de>
+    retire /proc/mounts scan for sysfs mount point;
+
+Luben Tuikov <ltuikov at yahoo dot com>
+    transport help [20061127]
+
+Mark Reed <mdr at sgi dot com>
+    mine sas_port and fc_remote_ports directories for
+    more transport information [20110113]
+
+Martin K. Petersen <martin dot petersen at oracle dot com>
+    co-author of protection information addition [20081206]
+    '--size' and '--protmode' options [20110301]
+
+Mike Christie <michaelc at cs dot wisc dot edu>
+    iSCSI transport help [20070104]
+
+Nate Dailey <Nate dot Dailey at stratus dot com>
+    Code to get actual /dev device name rather than produce synthetic
+    device name based on major and minor number. '--kname' option
+    shows "synthetic" device name; /dev device name is now the
+    default. [20050620]
+
+Stefan Richter <stefanr at s5r6 dot in-berlin dot de>
+    transport help with ieee1394 [20061231]
+
+Doug Gilbert
+1st March 2011
