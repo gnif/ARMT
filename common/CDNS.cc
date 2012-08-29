@@ -63,6 +63,7 @@ typedef struct
 #define DNS_FLAG_RA            (0x1 <<  7)
 #define DNS_FLAG_Z_MASK        (0x7 <<  4)
 #define DNS_FLAG_RCODE_MASK    (0xF <<  0)
+#define DNS_FLAG_RCODE_OK      (0x0)
 
 #define DNS_TYPE_A   0x1
 #define DNS_CLASS_IN 0x1
@@ -275,6 +276,12 @@ bool CDNS::DNSLookup(const std::string& host)
     if (!CCommon::IsBE())
       swab(query, query, sizeof(DNSQuery));
 
+    /* check that the reply is valid and there was no error */
+    if (!(query->flags & DNS_FLAG_QR) || (query->flags & DNS_FLAG_RCODE_MASK) != DNS_FLAG_RCODE_OK)
+      continue;
+
+    success = true;
+
     unsigned int len;
     std::string domain;
 
@@ -326,8 +333,6 @@ bool CDNS::DNSLookup(const std::string& host)
       record.expire = std::time(0) + answer->TTL;
       record.ipv4   = ipv4.str();
       m_cache[host].push_back(record);
-
-      success = true;
     }
 
     close(fd);
