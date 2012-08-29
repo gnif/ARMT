@@ -20,9 +20,9 @@ libs.a: pcre-stamp ssl-stamp zlib-stamp
 	$(AR) -r libs.a .objects/*/*.o
 
 pcre-stamp:
-	cd $(PCRE)      && \
-		libtoolize    && \
-		autoreconf -f && \
+	cd $(PCRE)			&& \
+		libtoolize		&& \
+		autoreconf -f	&& \
 		./configure --enable-static=yes --enable-shared=no
 	$(MAKE) -C $(PCRE)
 	touch pcre-stamp
@@ -39,7 +39,7 @@ zlib-stamp:
 clean:
 	rm -rf libs.a pcre-stamp
 	$(MAKE) -C $(PCRE) distclean
-	$(MAKE) -C $(SSL) distclean
-	$(MAKE) -C $(CURL) distclean
+	$(MAKE) -C $(SSL)  distclean
+	$(MAKE) -C $(ZLIB) distclean
 
 .PHONY: all clean
