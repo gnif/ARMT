@@ -112,6 +112,13 @@ std::string CCommon::IntToStr(int value, int base/* = 10*/)
   return buf;
 }
 
+std::string CCommon::StrToLower(const std::string &string)
+{
+  std::string result = string;
+  std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+  return result;
+}
+
 bool CCommon::IsFile(const std::string &path)
 {
   struct stat st;

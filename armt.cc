@@ -81,12 +81,33 @@ void BlockDeviceCheck()
 
 int main(int argc, char *argv[])
 {
+  /* must be called first */
   CCommon::Initialize(argc, argv);
 
+  /* DNS resolver must be setup next so the wrapper works */
   DNS.AddResolver("8.8.8.8"       );  /* Google  */
   DNS.AddResolver("8.8.4.4"       );  /* Google  */
   DNS.AddResolver("208.67.222.222");  /* OpenDNS */
   DNS.AddResolver("208.67.222.220");  /* OpenDNS */
+
+  CHTTP http;
+  std::string buffer;
+  http.SetHeader("Host"           , argv[1]);
+  http.SetHeader("User-Agent"     , "ARMT");
+  http.SetHeader("Connection"     , "close");
+  http.SetHeader("Accept"         , "text/plain");
+  http.SetHeader("Accept-Encoding", ""); 
+
+  uint8_t          error;
+  CHTTP::HeaderMap headers;
+  std::string      body;
+
+  if (http.Connect(argv[1], 443, true) && http.PerformRequest("GET", "/", error, headers, body))
+  {
+    printf("%u\n", error);
+    printf("%s\n", headers["date"].c_str());
+    printf("%s\n", body.c_str());
+  }
 
   if (_hostent)
     DNS.Free(_hostent);

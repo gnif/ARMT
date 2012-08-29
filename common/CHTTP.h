@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 #include <string>
+#include <sstream>
+#include <map>
 
 #include "polarssl/ssl.h"
 #include "polarssl/entropy.h"
@@ -34,11 +36,22 @@ class CHTTP
     CHTTP();
     ~CHTTP();
 
-    bool Initialize(const std::string &host, const int port, const bool ssl);
-    void DeInitialize();
+    bool Connect(const std::string &host, const int port, const bool ssl);
+    void Disconnect();
+
+    void SetHeader(const std::string &name, const std::string &value);
+    void DelHeader(const std::string &name);
+    void ClearHeaders();
+
+    typedef std::map<std::string, std::string> HeaderMap;
+
+    bool PerformRequest(const char *method, const std::string &uri, uint8_t &error, HeaderMap &headers, std::string &body);
 
   private:
+
+    bool             m_connected;
     bool             m_ssl;
+    HeaderMap        m_headers;
 
     /* polarssl vars */
     entropy_context  m_entropy;
@@ -46,6 +59,11 @@ class CHTTP
     ssl_context      m_sslContext;
     ssl_session      m_sslSession;
     int              m_sslFD;
+
+    bool Write(const std::string &buffer);
+    bool Read (std::stringstream &buffer);
+
+    void AppendHeaders(std::stringstream &request);
 };
 
 #endif // _CHTTP_H_
