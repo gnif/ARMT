@@ -45,7 +45,7 @@ class CHTTP
 
     typedef std::map<std::string, std::string> HeaderMap;
 
-    bool PerformRequest(const char *method, const std::string &uri, uint8_t &error, HeaderMap &headers, std::string &body);
+    bool PerformRequest(const char *method, const std::string &uri, uint16_t &error, HeaderMap &headers, std::string &body);
 
   private:
 

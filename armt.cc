@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
   http.SetHeader("Accept"         , "text/plain");
   http.SetHeader("Accept-Encoding", ""); 
 
-  uint8_t          error;
+  uint16_t         error;
   CHTTP::HeaderMap headers;
   std::string      body;
 
