@@ -22,6 +22,7 @@
 #define _CFSVERIFIER_H_
 
 #include <string>
+#include <ostream>
 #include <map>
 #include <vector>
 
@@ -51,8 +52,8 @@ class CFSVerifier
     void AddExclude(const std::string &path);
     bool AddPath(std::string path, const bool recurse);
     void Scan();
-    bool Save(const std::string &filename);
-    bool Diff(const std::string &filename, DiffList &result);
+    bool Save(std::ostream &output);
+    bool Diff(std::istream &input, DiffList &result);
 
   private:
     typedef std::vector<std::string                > StringList;

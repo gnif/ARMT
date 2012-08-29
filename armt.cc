@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/utsname.h>
+#include <fstream>
 
 #include "common/CDNS.h"
 #include "common/CPCIInfo.h"
@@ -108,11 +109,18 @@ void FSCheck()
   fs.Scan();
 
   /* save the file listing */
-//  fs.Save("files.dump");
+  {
+    std::fstream file("files.dump", std::fstream::out | std::fstream::trunc | std::fstream::binary);
+    fs.Save(file);
+    file.close();
+  }
 
   /* diff the scanned list against the saved file */
   CFSVerifier::DiffList diff;
-  fs.Diff("files.dump", diff);
+  {
+    std::fstream file("files.dump", std::fstream::in | std::fstream::binary);
+    fs.Diff(file, diff);
+  }
 
   for(CFSVerifier::DiffList::const_iterator it = diff.begin(); it != diff.end(); ++it)
   {

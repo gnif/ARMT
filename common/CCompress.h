@@ -21,8 +21,8 @@
 #ifndef _CCOMPRESS_H_
 #define _CCOMPRESS_H_
 
-#include <string>
-#include <sstream>
+#include <istream>
+#include <ostream>
 
 class CCompress
 {

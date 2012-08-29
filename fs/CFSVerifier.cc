@@ -134,71 +134,47 @@ void CFSVerifier::Scan()
   }
 }
 
-bool CFSVerifier::Save(const std::string &filename)
+bool CFSVerifier::Save(std::ostream &output)
 {
+  if (!output.good())
+    return false;
+
   std::stringstream ss;
   for(FileMap::const_iterator it = m_files.begin(); it != m_files.end(); ++it)
   {
     uint16_t length = it->first.length();
-    ss.write((const char *)&length   , sizeof(length));
-    ss.write(it->first.c_str()       , length        );
-    ss.write((const char *)it->second, 16            );
+    output.write((const char *)&length   , sizeof(length));
+    output.write(it->first.c_str()       , length        );
+    output.write((const char *)it->second, 16            );
   }
 
-  std::fstream file;
-  file.open(
-    filename.c_str(),
-    std::fstream::out | std::fstream::trunc | std::fstream::binary
-  );
-
-  if (!file.good())
-    return false;
-
-  bool result = CCompress::Deflate(ss, file);
-  file.close();
-
-  return result;
+  return true;
 }
 
-bool CFSVerifier::Diff(const std::string &filename, DiffList &result)
+bool CFSVerifier::Diff(std::istream &input, DiffList &result)
 {
-  std::fstream file;
-  file.open(
-    filename.c_str(),
-    std::fstream::in | std::fstream::binary
-  );
-
-  if (!file.good())
+  if (!input.good())
     return false;
-
-  std::stringstream ss;
-  if (!CCompress::Inflate(file, ss))
-  {
-    file.close();
-    return false;
-  }
-
-  file.close();
 
   FileMap  compare;
   uint16_t length;
-  while(!ss.eof())
+  while(!input.eof())
   {
-    ss.read((char *)&length, sizeof(length));
-    if (ss.gcount() < (std::streamsize)sizeof(length))
+    input.read((char *)&length, sizeof(length));
+    if (input.gcount() < (std::streamsize)sizeof(length))
       return false;
 
     char buffer[length];
-    ss.read((char *)&buffer, length);
-    if (ss.gcount() < (std::streamsize)length)
+    input.read((char *)&buffer, length);
+    if (input.gcount() < (std::streamsize)length)
       return false;
 
     std::string path;
     path.assign(buffer, length);
 
     unsigned char *hash = new unsigned char[16];
-    ss.read((char *)hash, 16);
-    if (ss.gcount() < (std::streamsize)16)
+    input.read((char *)hash, 16);
+    if (input.gcount() < (std::streamsize)16)
       return false;
 
     compare.insert(FilePair(path, hash));
