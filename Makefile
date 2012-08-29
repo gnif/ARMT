@@ -18,12 +18,13 @@ OBJECTS += common/CDNS.o
 OBJECTS += common/CProcInfo.o
 OBJECTS += common/CPCIInfo.o
 OBJECTS += common/CHTTP.o
-OBJECTS += common/MD5.o
 
 OBJECTS += block/CBlockEnumerator.o
 OBJECTS += block/CSMARTBlockDevice.o
 OBJECTS += block/CCCISSBlockDevice.o
 OBJECTS += block/CMDBlockDevice.o
+
+OBJECTS += fs/CFSVerifier.o
 
 ARCHIVES += libs/libs.a
 ARCHIVES += utils/utils.a

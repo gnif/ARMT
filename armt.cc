@@ -21,12 +21,15 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/utsname.h>
 
 #include "common/CDNS.h"
 #include "common/CPCIInfo.h"
 #include "common/CProcInfo.h"
 #include "common/CCommon.h"
 #include "common/CHTTP.h"
+
+#include "fs/CFSVerifier.h"
 
 #include "block/CBlockEnumerator.h"
 
@@ -79,6 +82,51 @@ void BlockDeviceCheck()
   }
 }
 
+void FSCheck()
+{
+  CFSVerifier fs;
+  fs.AddExclude("/boot/lost+found");
+  fs.AddExclude("/usr/src");
+
+  /* get the running kernel version and add the module path for it */
+  struct utsname details;
+  uname(&details);
+  std::string modules = "/lib/modules/";
+  modules.append(details.release);
+  fs.AddPath(modules, true);
+
+  /* exclude all other module paths */
+  fs.AddExclude("/lib/modules");
+
+  /* protect critcal paths */
+  fs.AddPath("/boot", true);
+  fs.AddPath("/bin" , true);
+  fs.AddPath("/sbin", true);
+  fs.AddPath("/lib" , true);
+
+  /* scan for files and hash them */
+  fs.Scan();
+
+  /* save the file listing */
+  //fs.Save("files.dump");
+
+  /* diff the scanned list against the saved file */
+  CFSVerifier::DiffList diff;
+  fs.Diff("files.dump", diff);
+
+  for(CFSVerifier::DiffList::const_iterator it = diff.begin(); it != diff.end(); ++it)
+  {
+    const char *status = "";
+    switch(it->m_type)
+    {
+      case CFSVerifier::DT_MODIFIED: status = "Modified File"; break;
+      case CFSVerifier::DT_MISSING : status = "Missing File" ; break;
+      case CFSVerifier::DT_NEW     : status = "New File"     ; break;
+    }
+    printf("%s - %s\n", it->m_path.c_str(), status);
+  }
+}
+
 int main(int argc, char *argv[])
 {
   /* must be called first */
@@ -89,6 +137,8 @@ int main(int argc, char *argv[])
   DNS.AddResolver("8.8.4.4"       );  /* Google  */
   DNS.AddResolver("208.67.222.222");  /* OpenDNS */
   DNS.AddResolver("208.67.222.220");  /* OpenDNS */
+
+  FSCheck();
 
   CHTTP http;
   std::string buffer;
