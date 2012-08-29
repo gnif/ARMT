@@ -37,9 +37,13 @@ zlib-stamp:
 	touch zlib-stamp
 
 clean:
-	rm -rf libs.a pcre-stamp
+	rm -rf libs.a *-stamp
+	$(MAKE) -C $(PCRE) clean
+	$(MAKE) -C $(SSL)  clean
+	$(MAKE) -C $(ZLIB) clean
+
+distclean: clean
 	$(MAKE) -C $(PCRE) distclean
-	$(MAKE) -C $(SSL)  distclean
 	$(MAKE) -C $(ZLIB) distclean
 
-.PHONY: all clean
+.PHONY: all clean distclean

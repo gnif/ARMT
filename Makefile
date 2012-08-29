@@ -51,8 +51,8 @@ clean:
 	rm -f $(OBJECTS) $(OUTPUT)_`uname -m`
 
 distclean: clean
-	$(MAKE) -C utils clean
-	$(MAKE) -C libs clean
+	$(MAKE) -C utils distclean
+	$(MAKE) -C libs  distclean
 
 pack:
 	strip -s $(OUTPUT)_`uname -m`
