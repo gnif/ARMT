@@ -6,7 +6,7 @@ INCFLAGS = -I./
 LDFLAGS  = -Wl,-rpath,/usr/local/lib
 OUTPUT   = armt
 
-CFLAGS  += -g -O2
+CFLAGS  += -g -O0
 LDFLAGS += -Wl,-Bstatic -static -static-libgcc -static-libstdc++
 LDFLAGS += -Wl,-wrap,gethostbyname
 
@@ -14,6 +14,7 @@ INCFLAGS += -Ilibs/pcre-8.20
 INCFLAGS += -Ilibs/polarssl-1.1.4/include
 
 OBJECTS += common/CCommon.o
+OBJECTS += common/CCompress.o
 OBJECTS += common/CDNS.o
 OBJECTS += common/CProcInfo.o
 OBJECTS += common/CPCIInfo.o

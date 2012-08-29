@@ -108,7 +108,7 @@ void FSCheck()
   fs.Scan();
 
   /* save the file listing */
-  //fs.Save("files.dump");
+//  fs.Save("files.dump");
 
   /* diff the scanned list against the saved file */
   CFSVerifier::DiffList diff;
@@ -139,6 +139,7 @@ int main(int argc, char *argv[])
   DNS.AddResolver("208.67.222.220");  /* OpenDNS */
 
   FSCheck();
+  return 0;
 
   CHTTP http;
   std::string buffer;

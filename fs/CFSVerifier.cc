@@ -19,6 +19,7 @@
  */
 
 #include "CFSVerifier.h"
+#include "common/CCompress.h"
 
 #include "polarssl/md5.h"
 
@@ -30,6 +31,9 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <string.h>
+
+#include <sstream>
+#include <fstream>
 
 CFSVerifier::~CFSVerifier()
 {
@@ -132,49 +136,70 @@ void CFSVerifier::Scan()
 
 bool CFSVerifier::Save(const std::string &filename)
 {
-  FILE *fp = fopen(filename.c_str(), "w");
-  if (!fp)
-    return false;
-
+  std::stringstream ss;
   for(FileMap::const_iterator it = m_files.begin(); it != m_files.end(); ++it)
   {
     uint16_t length = it->first.length();
-
-    fwrite(&length          , 1, sizeof(length), fp);
-    fwrite(it->first.c_str(), 1, length        , fp);
-    fwrite(it->second       , 1, 16            , fp);
+    ss.write((const char *)&length   , sizeof(length));
+    ss.write(it->first.c_str()       , length        );
+    ss.write((const char *)it->second, 16            );
   }
 
-  fclose(fp);
-  return true;
+  std::fstream file;
+  file.open(
+    filename.c_str(),
+    std::fstream::out | std::fstream::trunc | std::fstream::binary
+  );
+
+  if (!file.good())
+    return false;
+
+  bool result = CCompress::Deflate(ss, file);
+  file.close();
+
+  return result;
 }
 
 bool CFSVerifier::Diff(const std::string &filename, DiffList &result)
 {
-  FILE *fp = fopen(filename.c_str(), "r");
-  if (!fp)
+  std::fstream file;
+  file.open(
+    filename.c_str(),
+    std::fstream::in | std::fstream::binary
+  );
+
+  if (!file.good())
     return false;
+
+  std::stringstream ss;
+  if (!CCompress::Inflate(file, ss))
+  {
+    file.close();
+    return false;
+  }
+
+  file.close();
 
   FileMap  compare;
   uint16_t length;
-  while(!feof(fp) && fread(&length, 1, sizeof(length), fp) == sizeof(length))
+  while(!ss.eof())
   {
-    char buffer[length];
-    if (fread(&buffer, 1, length, fp) != length)
-    {
-      fclose(fp);
+    ss.read((char *)&length, sizeof(length));
+    if (ss.gcount() < (std::streamsize)sizeof(length))
       return false;
-    }
+
+    char buffer[length];
+    ss.read((char *)&buffer, length);
+    if (ss.gcount() < (std::streamsize)length)
+      return false;
 
     std::string path;
     path.assign(buffer, length);
 
     unsigned char *hash = new unsigned char[16];
-    if (fread(hash, 1, 16, fp) != 16)
-    {
-      fclose(fp);
+    ss.read((char *)hash, 16);
+    if (ss.gcount() < (std::streamsize)16)
       return false;
-    }
 
     compare.insert(FilePair(path, hash));
 
