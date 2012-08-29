@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "zlib.h"
 
-bool CCompress::Deflate(std::istream &input, std::ostream &output)
+bool CCompress::Deflate(std::istream &input, std::ostream &output, bool gzip/* = false */)
 {
   if (!input.good() || !output.good())
     return false;
@@ -34,7 +34,15 @@ bool CCompress::Deflate(std::istream &input, std::ostream &output)
   strm.opaque = Z_NULL;
 
   int ret, flush;
-  ret = deflateInit(&strm, Z_BEST_COMPRESSION);
+
+  ret = deflateInit2(
+    &strm,
+    Z_BEST_COMPRESSION,
+    Z_DEFLATED,
+    gzip ? (16 + MAX_WBITS) : MAX_WBITS,
+    MAX_MEM_LEVEL,
+    Z_DEFAULT_STRATEGY
+  );
   if (ret != Z_OK)
     return false;
 
@@ -70,7 +78,7 @@ bool CCompress::Deflate(std::istream &input, std::ostream &output)
   return true;
 }
 
-bool CCompress::Inflate(std::istream &input, std::ostream &output)
+bool CCompress::Inflate(std::istream &input, std::ostream &output, bool gzip/* = false */)
 {
   if (!input.good() || !output.good())
     return false;
@@ -83,7 +91,11 @@ bool CCompress::Inflate(std::istream &input, std::ostream &output)
   strm.next_in  = Z_NULL;
 
   int ret;
-  ret = inflateInit(&strm);
+
+  ret = inflateInit2(
+    &strm,
+    gzip ? (16 + MAX_WBITS) : MAX_WBITS
+  );
   if (ret != Z_OK)
     return false;
 

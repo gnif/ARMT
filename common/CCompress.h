@@ -27,8 +27,8 @@
 class CCompress
 {
   public:
-    static bool Deflate(std::istream &input, std::ostream &output);
-    static bool Inflate(std::istream &input, std::ostream &output);
+    static bool Deflate(std::istream &input, std::ostream &output, bool gzip = false);
+    static bool Inflate(std::istream &input, std::ostream &output, bool gzip = false);
 };
 
 #endif // _CCOMPRESS_H_
