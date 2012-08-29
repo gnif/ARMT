@@ -21,6 +21,7 @@
 #include "CDNS.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include <string.h>
 #include <sys/socket.h>
@@ -163,7 +164,7 @@ void CDNS::Free(struct hostent *addr)
 std::string CDNS::ParseDNSName(unsigned char *buffer, unsigned char *offset, unsigned int &len)
 {
   bool followed = false;
-  std::string domain;
+  std::stringstream domain;
 
   /* offset at 1, as we need to count the null terminator and the first length byte */
   len = 1;
@@ -179,16 +180,16 @@ std::string CDNS::ParseDNSName(unsigned char *buffer, unsigned char *offset, uns
       continue;
     }
 
-    domain.append((char*)&offset[1], *offset);
+    domain.write((char*)&offset[1], *offset);
     if (!followed)
       len += (*offset + 1);
 
     offset += (*offset + 1);
 
     if (*offset > 0)
-      domain.append(".");
+      domain << ".";
   }
-  return domain;
+  return domain.str();
 }
 
 bool CDNS::DNSLookup(const std::string& host)
@@ -312,19 +313,18 @@ bool CDNS::DNSLookup(const std::string& host)
         continue;
       }
 
-      std::string ipv4;
-      ipv4.append(CCommon::IntToStr(offset[0]));
-      ipv4.append(".");
-      ipv4.append(CCommon::IntToStr(offset[1]));
-      ipv4.append(".");
-      ipv4.append(CCommon::IntToStr(offset[2]));
-      ipv4.append(".");
-      ipv4.append(CCommon::IntToStr(offset[3]));
+      std::stringstream ipv4;
+      ipv4 <<
+        CCommon::IntToStr(offset[0]) << "." <<
+        CCommon::IntToStr(offset[1]) << "." <<
+        CCommon::IntToStr(offset[2]) << "." <<
+        CCommon::IntToStr(offset[3]);
+
       offset += answer->RDLENGTH;
 
       CacheRecord record;
       record.expire = std::time(0) + answer->TTL;
-      record.ipv4   = ipv4;
+      record.ipv4   = ipv4.str();
       m_cache[host].push_back(record);
 
       success = true;
