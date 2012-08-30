@@ -136,13 +136,23 @@ bool CHTTP::Write(const std::string &buffer)
   int ret;
   if (m_ssl)
   {
-    while((ret = ssl_write(&m_sslContext, (unsigned char*)buffer.c_str(), buffer.length())) <= 0)
-    {
-      if (ret != POLARSSL_ERR_NET_WANT_READ && ret != POLARSSL_ERR_NET_WANT_WRITE)
-        return false;
-    }
+    int offset = 0;
+    int length = buffer.length();
 
-    return (unsigned int)ret == buffer.length();
+    while(length > 0)
+    {
+      ret = ssl_write(&m_sslContext, (unsigned char*)buffer.c_str() + offset, length);
+      if (ret <= 0)
+      {
+        if (ret == POLARSSL_ERR_NET_WANT_WRITE)
+          continue;
+        return false;
+      }
+
+      offset += ret;
+      length -= ret;
+    }
+    return length == 0;
   }
   else
   {
@@ -164,7 +174,7 @@ bool CHTTP::Read(std::stringstream &buffer)
     {
       unsigned char result[1024];
       ret = ssl_read(&m_sslContext, result, sizeof(result));
-      if (ret == POLARSSL_ERR_NET_WANT_READ || ret == POLARSSL_ERR_NET_WANT_WRITE)
+      if (ret == POLARSSL_ERR_NET_WANT_READ)
         continue;
 
       if (ret == POLARSSL_ERR_SSL_PEER_CLOSE_NOTIFY || ret == 0)
@@ -193,10 +203,10 @@ bool CHTTP::PerformRequest(const char *method, const std::string &uri, uint16_t 
   headers.clear();
 
   std::stringstream request, result;
-
   request << method << " " << uri << " HTTP/1.0\r\n";
   AppendHeaders(request);
   request << "\r\n";
+  request << body;
 
   if (!Write(request.str()))
     return false;

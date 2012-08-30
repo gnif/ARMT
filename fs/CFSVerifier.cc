@@ -115,7 +115,7 @@ void CFSVerifier::Scan()
       path.append(dir->d_name);
 
       struct stat st;
-      if (stat(path.c_str(), &st) < 0)
+      if (lstat(path.c_str(), &st) < 0)
         continue;
 
       if (!S_ISREG(st.st_mode))
@@ -139,7 +139,6 @@ bool CFSVerifier::Save(std::ostream &output)
   if (!output.good())
     return false;
 
-  std::stringstream ss;
   for(FileMap::const_iterator it = m_files.begin(); it != m_files.end(); ++it)
   {
     uint16_t length = it->first.length();

@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/utsname.h>
+
+#include <iostream>
 #include <fstream>
 
 #include "common/CDNS.h"
@@ -29,9 +31,10 @@
 #include "common/CProcInfo.h"
 #include "common/CCommon.h"
 #include "common/CHTTP.h"
+#include "common/CCompress.h"
+#include "common/CMessageBuilder.h"
 
 #include "fs/CFSVerifier.h"
-
 #include "block/CBlockEnumerator.h"
 
 /* we wrap the libc version to avoid shared linking */
@@ -47,47 +50,38 @@ extern "C" {
   }
 }
 
-void BlockDeviceCheck()
+bool DISKCHECK(std::iostream &ss)
 {
+  bool send = false;
+
   IBlockDevice::Map map = CBlockEnumerator::Enumerate();
   for(IBlockDevice::Map::iterator it = map.begin(); it != map.end(); ++it)
   {
     const std::string &error = it->second->GetError();
     if (!error.empty())
-    {
-      printf(
-        "======== (%s) ========\n"
-        "  Device: %s\n"
-        "   Error: %s\n",
-        it->second->GetType   (),
-        it->second->GetDevName().c_str(),
-        error                   .c_str()
-      );
       continue;
-    }
 
-    printf(
-      "======== (%s) ========\n"
-      "  Device: %s\n"
-      "   Model: %s\n"
-      "  Serial: %s\n"
-      "Firmware: %s\n"
-      "  Status: %s\n",
-      it->second->GetType        (),
-      it->second->GetDevName     ().c_str(),
-      it->second->GetModel       ().c_str(),
-      it->second->GetSerialNumber().c_str(),
-      it->second->GetFirmware    ().c_str(),
-      it->second->IsOK           () ? "OK" : "FAILURE"
-    );
+    /* dont send devices that are not faulting */
+    if (it->second->IsOK())
+      continue;
+
+    send = true;
+    CMessageBuilder::PackString(ss, it->second->GetType        ());
+    CMessageBuilder::PackString(ss, it->second->GetDevName     ());
+    CMessageBuilder::PackString(ss, it->second->GetModel       ());
+    CMessageBuilder::PackString(ss, it->second->GetSerialNumber());
+    CMessageBuilder::PackString(ss, it->second->GetFirmware    ());   
   }
+
+  return send;
 }
 
-void FSCheck()
+bool FSCHECK(std::iostream &ss)
 {
   CFSVerifier fs;
   fs.AddExclude("/boot/lost+found");
   fs.AddExclude("/usr/src");
+  fs.AddExclude("/lib/init/rw");
 
   /* get the running kernel version and add the module path for it */
   struct utsname details;
@@ -107,32 +101,12 @@ void FSCheck()
 
   /* scan for files and hash them */
   fs.Scan();
+  return fs.Save(ss);
+}
 
-  /* save the file listing */
-  {
-    std::fstream file("files.dump", std::fstream::out | std::fstream::trunc | std::fstream::binary);
-    fs.Save(file);
-    file.close();
-  }
-
-  /* diff the scanned list against the saved file */
-  CFSVerifier::DiffList diff;
-  {
-    std::fstream file("files.dump", std::fstream::in | std::fstream::binary);
-    fs.Diff(file, diff);
-  }
-
-  for(CFSVerifier::DiffList::const_iterator it = diff.begin(); it != diff.end(); ++it)
-  {
-    const char *status = "";
-    switch(it->m_type)
-    {
-      case CFSVerifier::DT_MODIFIED: status = "Modified File"; break;
-      case CFSVerifier::DT_MISSING : status = "Missing File" ; break;
-      case CFSVerifier::DT_NEW     : status = "New File"     ; break;
-    }
-    printf("%s - %s\n", it->m_path.c_str(), status);
-  }
+bool SMARTCHECK(std::iostream &ss)
+{
+  return true;
 }
 
 int main(int argc, char *argv[])
@@ -146,58 +120,36 @@ int main(int argc, char *argv[])
   DNS.AddResolver("208.67.222.222");  /* OpenDNS */
   DNS.AddResolver("208.67.222.220");  /* OpenDNS */
 
-  FSCheck();
-  return 0;
-
-  CHTTP http;
-  std::string buffer;
-  http.SetHeader("Host"           , argv[1]);
-  http.SetHeader("User-Agent"     , "ARMT");
-  http.SetHeader("Connection"     , "close");
-  http.SetHeader("Accept"         , "text/plain");
-  http.SetHeader("Accept-Encoding", ""); 
-
-  uint16_t         error;
-  CHTTP::HeaderMap headers;
-  std::string      body;
-
-  if (http.Connect(argv[1], 443, true) && http.PerformRequest("GET", "/", error, headers, body))
+  std::string  armthost;
+  unsigned int armtport;
+  switch(argc)
   {
-    printf("%u\n", error);
-    printf("%s\n", headers["date"].c_str());
-    printf("%s\n", body.c_str());
+    case 2:
+      armthost = argv[1];
+      armtport = 443;
+      break;
+
+    case 3:
+      armthost = argv[1];
+      armtport = strtoul(argv[2], NULL, 10);
+      break;
+
+    default:
+      std::cerr << "Usage: " << argv[0] << " armt.host.com [port]" << std::endl;
+      return -1;
   }
+
+  CMessageBuilder msg(armthost, armtport);
+  msg.AppendSegment("DISKCHECK", &DISKCHECK);
+  msg.AppendSegment("FSCHECK"  , &FSCHECK  );
+  msg.Send();
 
   if (_hostent)
     DNS.Free(_hostent);
 
-//  BlockDeviceCheck();
   return 0;
-
 
 #if 0
-  CPCIInfo::DeviceList devices = CPCIInfo::GetDeviceList();
-  for(CPCIInfo::DeviceListIterator itt = devices.begin(); itt != devices.end(); ++itt)
-  {
-    printf("[0x%04hx|0x%04hx:0x%04hx] %s"
-#if defined(HAS_PCILIB)
-      " %s - %s"
-#endif
-      "\n",
-      itt->GetClass(),
-      itt->GetVendorID(),
-      itt->GetDeviceID(),
-      itt->GetClassName().c_str()
-#if defined(HAS_PCILIB)
-      ,
-      itt->GetVendorName().c_str(),
-      itt->GetDeviceName().c_str()
-#endif
-    );
-  }
-  
-  return 0;
-
   CProcInfo::ProcessList list = CProcInfo::GetProcessList();
   for(CProcInfo::ProcessListIterator itt = list.begin(); itt != list.end(); ++itt)
   {  

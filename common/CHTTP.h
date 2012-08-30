@@ -45,6 +45,14 @@ class CHTTP
 
     typedef std::map<std::string, std::string> HeaderMap;
 
+    /**
+      * Performs a HTTP request
+      * @param  method  The HTTP method to use (ie: GET, POST)
+      * @param  error   The HTTP error response code (ie: 200, 404)
+      * @param  headers The HTTP headers returned
+      * @param  body    This is input and output, input will be the body of the request, output will be the body of the reply
+      * @return         True if valid HTTP communication was established with the server, not if error == 200.
+      */   
     bool PerformRequest(const char *method, const std::string &uri, uint16_t &error, HeaderMap &headers, std::string &body);
 
   private:

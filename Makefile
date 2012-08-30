@@ -19,6 +19,7 @@ OBJECTS += common/CDNS.o
 OBJECTS += common/CProcInfo.o
 OBJECTS += common/CPCIInfo.o
 OBJECTS += common/CHTTP.o
+OBJECTS += common/CMessageBuilder.o
 
 OBJECTS += block/CBlockEnumerator.o
 OBJECTS += block/CSMARTBlockDevice.o
