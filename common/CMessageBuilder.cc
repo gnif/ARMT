@@ -115,10 +115,13 @@ bool CMessageBuilder::Send()
   /* send the message */
   uint16_t error;
   CHTTP::HeaderMap headers;
-  if (
-    !m_http.Connect(m_armthost, m_armtport, true) ||
-    !m_http.PerformRequest("POST", "/armt/db_upload.php", error, headers, body)
-  )
+  if (!m_http.Connect(m_armthost, m_armtport, true))
+    return false;
+
+  /* add the source IP to the header so the monitor knows what machine this is if it is behind a proxy or nat */
+  m_http.SetHeader("X-ARMT-IP", m_http.GetLocalIP());
+
+  if (!m_http.PerformRequest("POST", "/", error, headers, body))
     return false;
 
   printf("%d\n", error);

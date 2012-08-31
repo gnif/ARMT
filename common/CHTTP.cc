@@ -22,8 +22,11 @@
 
 #include "CCommon.h"
 #include "polarssl/net.h"
-
+#include <sys/socket.h>
 #include <pcrecpp.h>
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 CHTTP::CHTTP() :
   m_connected(false)
@@ -62,6 +65,14 @@ bool CHTTP::Connect(const std::string &host, const int port, const bool ssl)
     ssl_set_bio         (&m_sslContext, net_recv, &m_sslFD, net_send, &m_sslFD);
     ssl_set_ciphersuites(&m_sslContext, ssl_default_ciphersuites);
     ssl_set_session     (&m_sslContext, 1, 600, &m_sslSession);
+
+    struct sockaddr_in local_address;
+    socklen_t addr_size = sizeof(local_address);
+    getsockname(m_sslFD, (sockaddr *)&local_address, &addr_size);
+
+    char s[16];
+    inet_ntop(AF_INET, &local_address.sin_addr, s, sizeof(s));
+    m_localIP.assign(s);
 
     m_connected = true;
     return true;

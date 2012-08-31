@@ -38,6 +38,7 @@ class CHTTP
 
     bool Connect(const std::string &host, const int port, const bool ssl);
     void Disconnect();
+    const std::string &GetLocalIP() { return m_localIP; }
 
     void SetHeader(const std::string &name, const std::string &value);
     void DelHeader(const std::string &name);
@@ -56,9 +57,9 @@ class CHTTP
     bool PerformRequest(const char *method, const std::string &uri, uint16_t &error, HeaderMap &headers, std::string &body);
 
   private:
-
     bool             m_connected;
     bool             m_ssl;
+    std::string      m_localIP;
     HeaderMap        m_headers;
 
     /* polarssl vars */
