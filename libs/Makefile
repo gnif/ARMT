@@ -1,5 +1,5 @@
 PCRE = pcre-8.20
-SSL  = polarssl-1.1.4
+SSL  = polarssl
 ZLIB = zlib-1.2.7
 
 all: libs.a

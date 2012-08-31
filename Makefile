@@ -11,7 +11,7 @@ LDFLAGS += -Wl,-Bstatic -static -static-libgcc -static-libstdc++
 LDFLAGS += -Wl,-wrap,gethostbyname
 
 INCFLAGS += -Ilibs/pcre-8.20
-INCFLAGS += -Ilibs/polarssl-1.1.4/include
+INCFLAGS += -Ilibs/polarssl/include
 
 OBJECTS += common/CCommon.o
 OBJECTS += common/CCompress.o
