@@ -26,12 +26,22 @@
 #include <string>
 #include <map>
 
+#include "polarssl/x509.h"
+#include "polarssl/rsa.h"
+
 class CMessageBuilder
 {
   public:
     typedef bool (*SegmentFn)(std::iostream &ss);
 
     CMessageBuilder(const std::string &host, const unsigned int port);
+    ~CMessageBuilder();
+
+    bool SignPayload(const std::string &payload, std::string &signature);
+    std::string Base64Encode(const std::string &str);
+
+    bool LoadCertificate(const std::string &crt);
+    void InitAuth();
 
     void AppendSegment(const std::string &name, SegmentFn fn);
     bool Send();
@@ -42,6 +52,9 @@ class CMessageBuilder
 
     std::string  m_armthost;
     unsigned int m_armtport;
+
+    /* our key for signing messages */
+    rsa_context  m_rsa;
 
     std::string  m_hostname;
     SegmentList  m_segments;

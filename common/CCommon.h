@@ -25,6 +25,9 @@
 #include <string>
 #include <vector>
 
+#include "polarssl/entropy.h"
+#include "polarssl/ctr_drbg.h"
+
 class CCommon
 {
   public:
@@ -39,8 +42,10 @@ class CCommon
     static std::string IntToStr(int value, int base = 10);
     static std::string StrToLower(const std::string &string);
 
-    static const std::string &GetExePath () { return m_exePath ; }
-    static const std::string &GetBasePath() { return m_basePath; }
+    static const std::string      &GetExePath () { return m_exePath ; }
+    static const std::string      &GetBasePath() { return m_basePath; }
+    static       entropy_context  *GetEntropy () { return &m_entropy; }
+    static       ctr_drbg_context *GetDRBG    () { return &m_drbg   ; }
 
     static bool IsFile     (const std::string &path);
     static bool IsDir      (const std::string &path);
@@ -56,9 +61,12 @@ class CCommon
 
     static bool RunCommand(std::string &result, const std::string &cmd, ...) __attribute__ ((sentinel));
   private:
-    static bool         m_isBE;
-    static std::string  m_exePath;
-    static std::string  m_basePath;
+    static bool             m_isBE;
+    static std::string      m_exePath;
+    static std::string      m_basePath;
+
+    static entropy_context  m_entropy;
+    static ctr_drbg_context m_drbg;
 };
 
 #endif // _CCOMMON_H_

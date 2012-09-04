@@ -19,6 +19,7 @@
  */
 
 #include "CFSVerifier.h"
+#include "common/CCommon.h"
 #include "common/CCompress.h"
 
 #include "polarssl/md5.h"
@@ -142,6 +143,9 @@ bool CFSVerifier::Save(std::ostream &output)
   for(FileMap::const_iterator it = m_files.begin(); it != m_files.end(); ++it)
   {
     uint16_t length = it->first.length();
+    if (CCommon::IsBE())
+      swab(&length, &length, sizeof(length));
+
     output.write((const char *)&length   , sizeof(length));
     output.write(it->first.c_str()       , length        );
     output.write((const char *)it->second, 16            );
@@ -160,6 +164,9 @@ bool CFSVerifier::Diff(std::istream &input, DiffList &result)
   while(!input.eof())
   {
     input.read((char *)&length, sizeof(length));
+    if (CCommon::IsBE())
+      swab(&length, &length, sizeof(length));
+
     if (input.gcount() < (std::streamsize)sizeof(length))
       return false;
 

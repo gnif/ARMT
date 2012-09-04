@@ -24,7 +24,7 @@
 #include "polarssl/net.h"
 #include <sys/socket.h>
 #include <pcrecpp.h>
-
+#include <assert.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -47,11 +47,6 @@ bool CHTTP::Connect(const std::string &host, const int port, const bool ssl)
 
   if (ssl)
   {
-    const char *pers = "ARMT_CHTTPS";
-    entropy_init(&m_entropy);
-    if (ctr_drbg_init(&m_ctr_drbg, entropy_func, &m_entropy, (unsigned char* )pers, strlen(pers)) != 0)
-      return false;
-
     memset(&m_sslContext, 0, sizeof(m_sslContext));
     memset(&m_sslSession, 0, sizeof(m_sslSession));
 
@@ -61,7 +56,7 @@ bool CHTTP::Connect(const std::string &host, const int port, const bool ssl)
     ssl_init            (&m_sslContext);
     ssl_set_endpoint    (&m_sslContext, SSL_IS_CLIENT);
     ssl_set_authmode    (&m_sslContext, SSL_VERIFY_NONE);
-    ssl_set_rng         (&m_sslContext, ctr_drbg_random, &m_ctr_drbg);
+    ssl_set_rng         (&m_sslContext, ctr_drbg_random, CCommon::GetDRBG());
     ssl_set_bio         (&m_sslContext, net_recv, &m_sslFD, net_send, &m_sslFD);
     ssl_set_ciphersuites(&m_sslContext, ssl_default_ciphersuites);
     ssl_set_session     (&m_sslContext, 1, 600, &m_sslSession);

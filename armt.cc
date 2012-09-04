@@ -62,7 +62,7 @@ bool DISKCHECK(std::iostream &ss)
       continue;
 
     /* dont send devices that are not faulting */
-    if (it->second->IsOK())
+    if (!it->second->IsOK())
       continue;
 
     send = true;
@@ -102,11 +102,6 @@ bool FSCHECK(std::iostream &ss)
   /* scan for files and hash them */
   fs.Scan();
   return fs.Save(ss);
-}
-
-bool SMARTCHECK(std::iostream &ss)
-{
-  return true;
 }
 
 int main(int argc, char *argv[])

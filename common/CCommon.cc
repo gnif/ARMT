@@ -26,6 +26,7 @@
 #include <string.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include <stdarg.h>
 #include <sys/wait.h>
@@ -45,9 +46,11 @@
 #include "../utils/megactl.h"
 
 /* static declarations */
-bool        CCommon::m_isBE;
-std::string CCommon::m_exePath;
-std::string CCommon::m_basePath;
+bool             CCommon::m_isBE;
+std::string      CCommon::m_exePath;
+std::string      CCommon::m_basePath;
+entropy_context  CCommon::m_entropy;
+ctr_drbg_context CCommon::m_drbg;
 
 bool __attribute__((optimize("O0"))) detectBE()
 {
@@ -81,7 +84,13 @@ void CCommon::Initialize(const int argc, char* const argv[])
   WriteExe("bin/lsscsi"          , lsscsi          , lsscsi_size          );
   WriteExe("bin/megactl"         , megactl         , megactl_size         );
   WriteExe("bin/megasasctl"      , megasasctl      , megasasctl_size      );
+
+  /* init entropy for SSL/RSA */
+  const char *pers = "ARMT_CHTTPS";
+  entropy_init(&m_entropy);
+  assert(ctr_drbg_init(&m_drbg, entropy_func, &m_entropy, (unsigned char* )pers, strlen(pers)) == 0);
 }
+
 
 void CCommon::Trim(std::string &s)
 {

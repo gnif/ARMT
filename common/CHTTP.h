@@ -63,8 +63,6 @@ class CHTTP
     HeaderMap        m_headers;
 
     /* polarssl vars */
-    entropy_context  m_entropy;
-    ctr_drbg_context m_ctr_drbg;
     ssl_context      m_sslContext;
     ssl_session      m_sslSession;
     int              m_sslFD;
