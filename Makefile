@@ -1,4 +1,4 @@
-CC       = g++
+CC       = g++-4.3
 OBJCOPY  = objcopy
 CFLAGS   = -Wall -D__STDC_LIMIT_MACROS
 OBJECTS  = armt.o
