@@ -40,7 +40,7 @@ class CCommon
     static bool        IsBE() { return m_isBE; }
     static void        Trim    (std::string &s);
     static std::string IntToStr(int value, int base = 10);
-    static std::string StrToLower(const std::string &string);
+    static std::string StrToLower(std::string string);
 
     static const std::string      &GetExePath () { return m_exePath ; }
     static const std::string      &GetBasePath() { return m_basePath; }
