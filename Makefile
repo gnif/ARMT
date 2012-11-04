@@ -7,9 +7,10 @@ LDFLAGS  = -Wl,-rpath,/usr/local/lib
 OUTPUT   = armt
 
 CFLAGS  += -g -O0
-LDFLAGS += -Wl,-Bstatic -static -static-libgcc -static-libstdc++
+LDFLAGS += -Wl,-Bstatic -static -static-libgcc
 LDFLAGS += -Wl,-wrap,gethostbyname
 
+INCFLAGS += -Ilibs/zlib-1.2.7
 INCFLAGS += -Ilibs/pcre-8.20
 INCFLAGS += -Ilibs/polarssl/include
 
