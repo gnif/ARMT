@@ -191,7 +191,7 @@ void CMessageBuilder::PackString(std::ostream &ss, const std::string &value)
   ss << value;
 }
 
-bool CMessageBuilder::Send()
+bool CMessageBuilder::Send(int &result)
 {
   std::string body;
   {
@@ -204,7 +204,7 @@ bool CMessageBuilder::Send()
 
       /* get the data */
       std::stringstream ss;
-      if (!segment->second(ss))
+      if (segment->second && !segment->second(ss))
         continue;
 
       uint32_t datalen = ss.tellp();
@@ -255,14 +255,11 @@ bool CMessageBuilder::Send()
   m_http.SetHeader("Content-Length", CCommon::IntToStr(body.length()));
 
   /* send the message */
-  uint16_t error;
   CHTTP::HeaderMap headers;
-  if (!m_http.PerformRequest("POST", "/", error, headers, body))
+  if (!m_http.PerformRequest("POST", "/", result, headers, body))
     return false;
 
-  printf("%d\n", error);
-  printf("%s\n", body.c_str());
-
-  return error == 202;
+  /* return true as we performed the request, result code needs to be checked for 202 still however */
+  return true;
 }
 

@@ -203,7 +203,7 @@ bool CHTTP::Read(std::stringstream &buffer)
   }
 }
 
-bool CHTTP::PerformRequest(const char *method, const std::string &uri, uint16_t &error, HeaderMap &headers, std::string &body)
+bool CHTTP::PerformRequest(const char *method, const std::string &uri, int &error, HeaderMap &headers, std::string &body)
 {
   error = 0;
   headers.clear();

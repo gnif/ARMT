@@ -145,10 +145,8 @@ int main(int argc, char *argv[])
   CCommon::Initialize(argc, argv);
 
   /* DNS resolver must be setup next so the wrapper works */
-  DNS.AddResolver("8.8.8.8"       );  /* Google  */
-  DNS.AddResolver("8.8.4.4"       );  /* Google  */
-  DNS.AddResolver("208.67.222.222");  /* OpenDNS */
-  DNS.AddResolver("208.67.222.220");  /* OpenDNS */
+  DNS.AddResolver("8.8.8.8");  /* Google  */
+  DNS.AddResolver("8.8.4.4");  /* Google  */
 
   std::string  armthost;
   unsigned int armtport;
@@ -169,9 +167,21 @@ int main(int argc, char *argv[])
       return -1;
   }
 
-
+  /* send an AUTH message to verify the remote host */
+  int result = 0;
   CMessageBuilder msg(armthost, armtport);
-  CScheduler s;
+  msg.AppendSegment("AUTH", NULL);
+  if (!msg.Send(result))
+  {
+    fprintf(stderr, "Failed to communicate with the ARMT server\n");
+    return -1;
+  }
+
+  if (result != 202)
+  {
+    fprintf(stderr, "Failed to authenticate with the ARMT server\n");
+    return -1;
+  }
 
   /* calculate the GMT time for midnight tonight in the server's timezone */
   tzset();
@@ -180,7 +190,8 @@ int main(int argc, char *argv[])
   midnight += 86400;
   midnight += timezone - (daylight * 3600);
  
-  /* add the jobs to the scheduler */
+  /* create and add the jobs to the scheduler */
+  CScheduler s;
   s.AddJob(new CMSGJob(midnight  , 86400, &msg, "FSCHECK"  , &FSCHECK  ));
   s.AddJob(new CMSGJob(time(NULL), 60   , &msg, "DISKCHECK", &DISKCHECK));
 
@@ -188,7 +199,13 @@ int main(int argc, char *argv[])
   {
     msg.Reset();
     if (s.Run())
-      msg.Send();
+    {
+      result = 0;
+      if (!msg.Send(result))
+        fprintf(stderr, "Failed to communicate with the ARMT server\n");
+      else if (result != 202)
+        fprintf(stderr, "Error in communication with the ARMT server, result = %d\n", result);
+    }
     sleep(1);
   }
 

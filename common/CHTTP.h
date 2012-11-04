@@ -54,7 +54,7 @@ class CHTTP
       * @param  body    This is input and output, input will be the body of the request, output will be the body of the reply
       * @return         True if valid HTTP communication was established with the server, not if error == 200.
       */   
-    bool PerformRequest(const char *method, const std::string &uri, uint16_t &error, HeaderMap &headers, std::string &body);
+    bool PerformRequest(const char *method, const std::string &uri, int &error, HeaderMap &headers, std::string &body);
 
   private:
     bool             m_connected;

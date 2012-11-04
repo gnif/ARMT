@@ -45,7 +45,7 @@ class CMessageBuilder
 
     void AppendSegment(const std::string &name, SegmentFn fn);
     void Reset();
-    bool Send();
+    bool Send(int &result);
 
     static void PackString(std::ostream &ss, const std::string &value);
   private:
