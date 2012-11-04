@@ -376,6 +376,13 @@ bool CCommon::RunCommand(std::string &result, const std::string &cmd, ...)
       while((length = read(pipefd[0], buffer, sizeof(buffer))) > 0)
         result.append(buffer, length);
 
+      int status;
+      while(waitpid(pid, &status, 0) > -1)
+      {
+        if (WIFEXITED(status) || WIFSIGNALED(status))
+          break;
+      }
+
       close(pipefd[0]);
       return true;
     }
