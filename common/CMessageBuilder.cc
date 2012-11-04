@@ -204,6 +204,8 @@ bool CMessageBuilder::Send(int &result)
 
       /* get the data */
       std::stringstream ss;
+
+      /* skip segments with no data, unless the function is NULL */
       if (segment->second && !segment->second(ss))
         continue;
 
@@ -218,7 +220,11 @@ bool CMessageBuilder::Send(int &result)
 
     /* if there is nothing to send, do not do anything */
     if (!send)
+    {
+      /* forge a 202 response */
+      result = 202;
       return true;
+    }
 
     std::stringstream compressed;
     CCompress::Deflate(total, compressed);
