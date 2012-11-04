@@ -62,7 +62,7 @@ bool DISKCHECK(std::iostream &ss)
       continue;
 
     /* dont send devices that are not faulting */
-    if (!it->second->IsOK())
+    if (it->second->IsOK())
       continue;
 
     send = true;
