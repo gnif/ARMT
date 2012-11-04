@@ -29,6 +29,7 @@
 #include "polarssl/ssl.h"
 #include "polarssl/entropy.h"
 #include "polarssl/ctr_drbg.h"
+#include "polarssl/x509.h"
 
 class CHTTP
 {
@@ -65,6 +66,7 @@ class CHTTP
     /* polarssl vars */
     ssl_context      m_sslContext;
     ssl_session      m_sslSession;
+    x509_cert       *m_sslCACerts;
     int              m_sslFD;
 
     bool Write(const std::string &buffer);

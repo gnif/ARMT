@@ -21,6 +21,7 @@
 #include "CHTTP.h"
 
 #include "CCommon.h"
+#include "RootCerts.h"
 #include "polarssl/net.h"
 #include <sys/socket.h>
 #include <pcrecpp.h>
@@ -31,11 +32,38 @@
 CHTTP::CHTTP() :
   m_connected(false)
 {
+  x509_cert *current;
+  m_sslCACerts = current = new x509_cert;
+  memset(current, 0, sizeof(x509_cert));
+
+  for(int i = 0; ; ++i)
+  {
+    x509parse_crt(current, (unsigned char *)RootCerts[i], strlen(RootCerts[i]));
+    if (RootCerts[i+1] == NULL)
+      break;
+
+    current->next = new x509_cert;
+    memset(current->next, 0, sizeof(x509_cert));
+    current = current->next;
+  }
 }
 
 CHTTP::~CHTTP()
 {
   Disconnect();
+
+  while(m_sslCACerts->next)
+  {
+    /* save the pointer to the next record */
+    x509_cert *next = m_sslCACerts->next;
+
+    /* free the cert and the x509_cert struct */
+    x509_free(m_sslCACerts);
+    delete m_sslCACerts;
+
+    /* move onto the next record */
+    m_sslCACerts = next;
+  }
 }
 
 bool CHTTP::Connect(const std::string &host, const int port, const bool ssl)
@@ -55,15 +83,40 @@ bool CHTTP::Connect(const std::string &host, const int port, const bool ssl)
 
     ssl_init            (&m_sslContext);
     ssl_set_endpoint    (&m_sslContext, SSL_IS_CLIENT);
-    ssl_set_authmode    (&m_sslContext, SSL_VERIFY_NONE);
+    ssl_set_authmode    (&m_sslContext, SSL_VERIFY_OPTIONAL);
     ssl_set_rng         (&m_sslContext, ctr_drbg_random, CCommon::GetDRBG());
     ssl_set_bio         (&m_sslContext, net_recv, &m_sslFD, net_send, &m_sslFD);
     ssl_set_ciphersuites(&m_sslContext, ssl_default_ciphersuites);
     ssl_set_session     (&m_sslContext, 1, 600, &m_sslSession);
+    ssl_set_ca_chain    (&m_sslContext, m_sslCACerts, NULL, host.c_str());
 
     struct sockaddr_in local_address;
     socklen_t addr_size = sizeof(local_address);
     getsockname(m_sslFD, (sockaddr *)&local_address, &addr_size);
+
+    /* handshake */
+    int ret;
+    while((ret = ssl_handshake(&m_sslContext)) != 0)
+    {
+      if (ret != POLARSSL_ERR_NET_WANT_READ  || ret != POLARSSL_ERR_NET_WANT_WRITE)
+      {
+        fprintf(stderr, "CHTTP::Connect - Failed to perform SSL handshake\n");
+        return false;
+      }
+    }
+
+    /* check the certificate */
+    if ((ret = ssl_get_verify_result(&m_sslContext)) != 0)
+    {
+      fprintf(stderr, "CHTTP::Connect - SSL certificate failed to verify:\n");
+      if (ret & BADCERT_EXPIRED    ) fprintf(stderr, " * BADCERT_EXPIRED\n"    );
+      if (ret & BADCERT_REVOKED    ) fprintf(stderr, " * BADCERT_REVOKED\n"    );
+      if (ret & BADCERT_CN_MISMATCH) fprintf(stderr, " * BADCERT_CN_MISMATCH\n");
+      if (ret & BADCERT_NOT_TRUSTED) fprintf(stderr, " * BADCERT_NOT_TRUSTED\n");
+      fprintf(stderr, "\n");
+
+      return false; 
+    }
 
     char s[16];
     inet_ntop(AF_INET, &local_address.sin_addr, s, sizeof(s));
