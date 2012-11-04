@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/utsname.h>
+#include <time.h>
 
 #include <iostream>
 #include <fstream>
@@ -33,6 +34,7 @@
 #include "common/CHTTP.h"
 #include "common/CCompress.h"
 #include "common/CMessageBuilder.h"
+#include "common/CScheduler.h"
 
 #include "fs/CFSVerifier.h"
 #include "block/CBlockEnumerator.h"
@@ -104,6 +106,39 @@ bool FSCHECK(std::iostream &ss)
   return fs.Save(ss);
 }
 
+class CMSGJob: public ISchedulerJob
+{
+  public:
+    CMSGJob(
+      const std::time_t          next    ,
+      const unsigned int         interval,
+      CMessageBuilder            *msg    ,
+      const std::string          &name   ,
+      CMessageBuilder::SegmentFn fn
+    ) :
+      m_next    (next    ),
+      m_interval(interval),
+      m_msg     (msg     ),
+      m_name    (name    ),
+      m_fn      (fn      )
+    {}
+
+    virtual std::time_t  GetRunTime(                ) { return m_next; }
+    virtual void         SetRunTime(std::time_t time) { m_next = time; }
+    virtual unsigned int GetDelayInterval(          ) { return m_interval; }
+    virtual void Execute()
+    {
+      m_msg->AppendSegment(m_name, m_fn);
+    }
+
+  private:
+    std::time_t                m_next;
+    unsigned int               m_interval;
+    CMessageBuilder           *m_msg;
+    std::string                m_name;
+    CMessageBuilder::SegmentFn m_fn;
+};
+
 int main(int argc, char *argv[])
 {
   /* must be called first */
@@ -134,10 +169,28 @@ int main(int argc, char *argv[])
       return -1;
   }
 
+
   CMessageBuilder msg(armthost, armtport);
-  msg.AppendSegment("DISKCHECK", &DISKCHECK);
-  msg.AppendSegment("FSCHECK"  , &FSCHECK  );
-  msg.Send();
+  CScheduler s;
+
+  /* calculate the GMT time for midnight tonight in the server's timezone */
+  tzset();
+  std::time_t midnight = time(NULL);
+  midnight -= midnight % 86400;
+  midnight += 86400;
+  midnight += timezone - (daylight * 3600);
+ 
+  /* add the jobs to the scheduler */
+  s.AddJob(new CMSGJob(midnight  , 86400, &msg, "FSCHECK"  , &FSCHECK  ));
+  s.AddJob(new CMSGJob(time(NULL), 60   , &msg, "DISKCHECK", &DISKCHECK));
+
+  while(true)
+  {
+    msg.Reset();
+    if (s.Run())
+      msg.Send();
+    sleep(1);
+  }
 
   if (_hostent)
     DNS.Free(_hostent);

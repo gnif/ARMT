@@ -174,6 +174,11 @@ void CMessageBuilder::AppendSegment(const std::string &name, SegmentFn fn)
   m_segments[name] = fn;
 }
 
+void CMessageBuilder::Reset()
+{
+  m_segments.clear();
+}
+
 void CMessageBuilder::PackString(std::ostream &ss, const std::string &value)
 {
   uint16_t len = value.length();
@@ -190,6 +195,7 @@ bool CMessageBuilder::Send()
 {
   std::string body;
   {
+    bool send = false;
     std::stringstream total;
     for(SegmentList::iterator segment = m_segments.begin(); segment != m_segments.end(); ++segment)
     {
@@ -207,8 +213,12 @@ bool CMessageBuilder::Send()
       total.write((const char *)&namelen, sizeof(namelen));
       total.write((const char *)&datalen, sizeof(datalen));
       total << segment->first << ss.str();
+      send = true;
     }
 
+    /* if there is nothing to send, do not do anything */
+    if (!send)
+      return true;
 
     std::stringstream compressed;
     CCompress::Deflate(total, compressed);
